@@ -10,7 +10,6 @@ const ArticleSchema = new Schema({
   },
   date: {
     type: Date,
-    required: [true, '日期不能為空'],
     default: Date.now
   },
   content: {
@@ -34,8 +33,8 @@ const ArticleSchema = new Schema({
     required: [true, '缺少節慶 ID']
   },
   published: {
-    type: String,
-    default: '只有我能看見'
+    type: Boolean,
+    default: true
   }
 }, { versionKey: false })
 

@@ -14,6 +14,8 @@ import {
   extend,
   getuserinfo,
   getalluserinfo,
+  getUserInfoById,
+  editUserInfoById,
   getOrderById
 } from '../controllers/users.js'
 
@@ -22,6 +24,8 @@ const router = express.Router()
 router.post('/', register)
 router.get('/', auth, getuserinfo)
 router.get('/all', getalluserinfo) // 取得所有會員路由
+router.get('/id/:id', getUserInfoById)
+router.patch('/id/:id', editUserInfoById)
 router.post('/login', login)
 router.delete('/logout', auth, logout)
 router.post('/cart', auth, addCart)

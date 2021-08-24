@@ -9,9 +9,8 @@ export const newArticle = async (req, res) => {
   }
   try {
     const festival = await festivals.findOne({ title: req.body.festival })
-    const result = await articles.create({
+    const process = {
       title: req.body.title,
-      date: req.body.date,
       content: req.body.content,
       information: req.body.information,
       image: req.filepath,
@@ -19,7 +18,11 @@ export const newArticle = async (req, res) => {
       weight: req.body.weight,
       festival: festival._id, // 透過節慶名稱找到節慶 id
       published: req.body.published
-    })
+    }
+    if (req.body.date) {
+      process.date = req.body.date
+    }
+    const result = await articles.create(process)
     res.status(200).send({ success: true, message: '', result })
   } catch (error) {
     console.log(error)
@@ -43,12 +46,12 @@ export const getArticle = async (req, res) => {
 }
 
 export const getAllArticle = async (req, res) => {
-  // if (req.user.role !== 1) {
-  //   res.status(403).send({ success: false, message: '沒有權限' })
-  //   return
-  // }
+  if (req.user.role !== 1) {
+    res.status(403).send({ success: false, message: '沒有權限' })
+    return
+  }
   try {
-    const result = await articles.find()
+    const result = await articles.find().populate('festival')
     res.status(200).send({ success: true, message: '', result })
   } catch (error) {
     res.status(500).send({ success: false, message: '伺服器錯誤' })
@@ -57,7 +60,7 @@ export const getAllArticle = async (req, res) => {
 
 export const getArticleById = async (req, res) => {
   try {
-    const result = await articles.findById(req.params.id)
+    const result = await articles.findById(req.params.id).populate('festival')
     res.status(200).send({ success: true, message: '', result })
   } catch (error) {
     if (error.name === 'CastError') {
@@ -70,7 +73,7 @@ export const getArticleById = async (req, res) => {
 
 export const getArticleByAuthor = async (req, res) => {
   try {
-    const result = await articles.find({ author: req.params.id })
+    const result = await articles.find({ author: req.params.id } && { published: true })
     res.status(200).send({ success: true, message: '', result })
   } catch (error) {
     if (error.name === 'CastError') {
@@ -87,7 +90,7 @@ export const getArticleByFestival = async (req, res) => {
     res.status(200).send({ success: true, message: '', result })
   } catch (error) {
     if (error.name === 'CastError') {
-      res.status(404).send({ success: false, message: '查無商品' })
+      res.status(404).send({ success: false, message: '查無文章' })
     } else {
       res.status(500).send({ success: false, message: '伺服器錯誤' })
     }
@@ -95,23 +98,26 @@ export const getArticleByFestival = async (req, res) => {
 }
 
 export const editArticle = async (req, res) => {
-  if (req.user.role !== 1) {
-    res.status(403).send({ success: false, message: '沒有權限' })
-    return
-  }
   if (!req.headers['content-type'] || !req.headers['content-type'].includes('multipart/form-data')) {
     res.status(400).send({ success: false, message: '資料格式不正確' })
     return
   }
   try {
-    const data = {
-      name: req.body.name,
-      price: req.body.price,
-      description: req.body.description,
-      sell: req.body.sell
+    const festival = await festivals.findOne({ title: req.body.festival })
+    const process = {
+      title: req.body.title,
+      content: req.body.content,
+      information: req.body.information,
+      author: req.body.author,
+      weight: req.body.weight,
+      festival: festival._id, // 透過節慶名稱找到節慶 id
+      published: req.body.published
     }
-    if (req.filepath) data.image = req.filepath
-    const result = await articles.findByIdAndUpdate(req.params.id, data, { new: true })
+    if (req.body.date) {
+      process.date = req.body.date
+    }
+    if (req.filepath) process.image = req.filepath
+    const result = await articles.findByIdAndUpdate(req.params.id, process, { new: true })
     res.status(200).send({ success: true, message: '', result })
   } catch (error) {
     if (error.name === 'ValidationError') {

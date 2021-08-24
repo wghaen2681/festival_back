@@ -3,7 +3,6 @@ import assists from '../models/assists.js'
 // 新增節慶的方法
 export const newAssist = async (req, res) => {
   try {
-    // 定義 result 為輸出資料的一個常數
     const result = await assists.create({
       type: req.body.type,
       title: req.body.title,

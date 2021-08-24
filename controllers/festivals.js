@@ -47,10 +47,6 @@ export const getFestival = async (req, res) => {
 }
 
 export const getAllFestival = async (req, res) => {
-  // if (req.user.role !== 1) {
-  //   res.status(403).send({ success: false, message: '沒有權限' })
-  //   return
-  // }
   try {
     const result = await festivals.find()
     res.status(200).send({ success: true, message: '', result })
@@ -70,7 +66,7 @@ export const getUpcmingFestival = async (req, res) => {
 
 export const getProgressFestival = async (req, res) => {
   try {
-    const result = await festivals.find({ dateStart: { $lte: new Date() } }).sort({ dateStart: -1 }) // 取得所有開始日期在今天以前的節慶，並依降冪排列
+    const result = await festivals.find({ dateStart: { $lte: new Date() } }).find({ dateEnd: { $gte: new Date() } }).sort({ dateStart: -1 }) // 取得所有進行中的節慶，並依降冪排列
     res.status(200).send({ success: true, message: '', result })
   } catch (error) {
     res.status(500).send({ success: false, message: '伺服器錯誤' })
@@ -83,7 +79,7 @@ export const getFestivalById = async (req, res) => {
     res.status(200).send({ success: true, message: '', result })
   } catch (error) {
     if (error.name === 'CastError') {
-      res.status(404).send({ success: false, message: '查無商品' })
+      res.status(404).send({ success: false, message: '查無節慶' })
     } else {
       res.status(500).send({ success: false, message: '伺服器錯誤' })
     }
@@ -158,7 +154,7 @@ export const getFestivalBySeason = async (req, res) => {
                       }
                     ]
                   },
-                  then: 2
+                  then: 1
                 }, {
                   case: {
                     $and: [
@@ -233,10 +229,13 @@ export const editFestival = async (req, res) => {
   }
   try {
     const data = {
-      name: req.body.name,
-      price: req.body.price,
+      title: req.body.title,
+      dateStart: req.body.dateStart,
+      dateEnd: req.body.dateEnd,
       description: req.body.description,
-      sell: req.body.sell
+      information: req.body.information,
+      image: req.body.image,
+      host: req.body.host
     }
     if (req.filepath) data.image = req.filepath
     const result = await festivals.findByIdAndUpdate(req.params.id, data, { new: true })

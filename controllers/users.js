@@ -75,8 +75,7 @@ export const logout = async (req, res) => {
 
 export const addCart = async (req, res) => {
   try {
-    // 驗證商品是否存在
-    const result = await products.findById(req.body.product)
+    const result = await products.findById(req.body.product) // 驗證商品是否存在
     // 如果找不到或已下架
     if (!result || !result.sell) {
       res.status(404).send({ success: false, message: '資料不存在' })
@@ -101,8 +100,7 @@ export const addCart = async (req, res) => {
 
 export const getCart = async (req, res) => {
   try {
-    // 用使用者 id 查詢使用者，只取 cart 欄位並將 ref 的商品資料一起帶出來
-    const { cart } = await users.findById(req.user._id, 'cart').populate('cart.product')
+    const { cart } = await users.findById(req.user._id, 'cart').populate('cart.product') // 用使用者 id 查詢使用者，只取 cart 欄位並將 ref 的商品資料一起帶出來
     res.status(200).send({ success: true, message: '', result: cart })
   } catch (error) {
     res.status(500).send({ success: false, message: '伺服器錯誤' })
@@ -260,6 +258,27 @@ export const getuserinfo = async (req, res) => {
 export const getalluserinfo = async (req, res) => {
   try {
     const result = await users.find()
+    res.status(200).send({ success: true, message: '', result })
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({ success: false, message: '伺服器錯誤' })
+  }
+}
+
+export const getUserInfoById = async (req, res) => {
+  try {
+    const result = await users.findById(req.params.id)
+    result.password = md5(result.password) // Jam: How to decode password in md5?
+    res.status(200).send({ success: true, message: '', result })
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({ success: false, message: '伺服器錯誤' })
+  }
+}
+
+export const editUserInfoById = async (req, res) => {
+  try {
+    const result = await users.findOneAndUpdate(req.params.id, { $set: { role: req.body.role } }) // Jam: How to write findOneAndUpdate?
     res.status(200).send({ success: true, message: '', result })
   } catch (error) {
     console.log(error)
